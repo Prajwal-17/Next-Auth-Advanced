@@ -1,0 +1,55 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  name          String?
+  password      String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  Account       Account[]
+
+  @@map("user")
+}
+
+model Account {
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  type              String
+  provider          String
+  providerAccountId String
+  token_type        String?
+  refresh_token     String? @db.String
+  access_token      String? @db.String
+  id_token          String? @db.String
+  scope             String?
+  session_state     String?
+  expires_at        Int?
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @db.ObjectId
+
+  @@unique([provider, providerAccountId])
+  @@map("account")
+}
+
+model VerificationToken {
+  id      String   @id @default(auto()) @map("_id") @db.ObjectId
+  email   String   @unique
+  token   String   @unique
+  expires DateTime
+}
